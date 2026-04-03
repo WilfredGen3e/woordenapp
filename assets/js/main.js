@@ -4,14 +4,114 @@ const GUESS_WORDS = [
   { word: "hond", image: "assets/img/hond.png", emoji: "🐶" },
   { word: "maan", image: "assets/img/maan.png", emoji: "🌙" },
   { word: "boek", image: "assets/img/boek.png", emoji: "📘" },
-  { word: "muts", image: "assets/img/muts.png", emoji: "🧢" }
+  { word: "muts", image: null, emoji: "🧶" },
+  { word: "kat", image: null, emoji: "🐱" },
+  { word: "vis", image: null, emoji: "🐟" },
+  { word: "zon", image: null, emoji: "☀️" },
+  { word: "ster", image: null, emoji: "⭐" },
+  { word: "deur", image: null, emoji: "🚪" },
+  { word: "raam", image: null, emoji: "🪟" },
+  { word: "tafel", image: null, emoji: "🪑" },
+  { word: "stoel", image: null, emoji: "🪑" },
+  { word: "bord", image: null, emoji: "🍽️" },
+  { word: "mes", image: null, emoji: "🔪" },
+  { word: "vork", image: null, emoji: "🍴" },
+  { word: "lepel", image: null, emoji: "🥄" },
+  { word: "brood", image: null, emoji: "🍞" },
+  { word: "melk", image: null, emoji: "🥛" },
+  { word: "kaas", image: null, emoji: "🧀" },
+  { word: "appel", image: null, emoji: "🍎" },
+  { word: "peer", image: null, emoji: "🍐" },
+  { word: "banaan", image: null, emoji: "🍌" },
+  { word: "neus", image: null, emoji: "👃" },
+  { word: "oor", image: null, emoji: "👂" },
+  { word: "mond", image: null, emoji: "👄" },
+  { word: "hand", image: null, emoji: "✋" },
+  { word: "voet", image: null, emoji: "🦶" },
+  { word: "jas", image: null, emoji: "🧥" },
+  { word: "sok", image: null, emoji: "🧦" },
+  { word: "broek", image: null, emoji: "👖" },
+  { word: "trui", image: null, emoji: "🧶" },
+  { word: "pet", image: null, emoji: "🧢" },
+  { word: "fiets", image: null, emoji: "🚲" },
+  { word: "bus", image: null, emoji: "🚌" },
+  { word: "trein", image: null, emoji: "🚆" },
+  { word: "boot", image: null, emoji: "⛵" },
+  { word: "auto", image: null, emoji: "🚗" },
+  { word: "vuur", image: null, emoji: "🔥" },
+  { word: "gras", image: null, emoji: "🌿" },
+  { word: "bloem", image: null, emoji: "🌸" },
+  { word: "roos", image: null, emoji: "🌹" },
+  { word: "wolk", image: null, emoji: "☁️" },
+  { word: "regen", image: null, emoji: "🌧️" },
+  { word: "sneeuw", image: null, emoji: "❄️" },
+  { word: "ijs", image: null, emoji: "🧊" },
+  { word: "doos", image: null, emoji: "📦" },
+  { word: "bal", image: null, emoji: "⚽" },
+  { word: "pop", image: null, emoji: "🪆" },
+  { word: "beer", image: null, emoji: "🧸" },
+  { word: "krab", image: null, emoji: "🦀" },
+  { word: "slak", image: null, emoji: "🐌" },
+  { word: "muis", image: null, emoji: "🐭" },
+  { word: "koek", image: null, emoji: "🍪" },
+  { word: "soep", image: null, emoji: "🍲" }
 ];
 
 const BUILD_WORDS = [
   { word: "boek", image: "assets/img/boek.png", type: "klank", emoji: "📘" },
   { word: "dier", image: "assets/img/dier.png", type: "klank", emoji: "🐾" },
   { word: "maan", image: "assets/img/maan.png", type: "klank", emoji: "🌙" },
-  { word: "muts", image: "assets/img/muts.png", type: "normaal", emoji: "🧢" }
+  { word: "muts", image: null, type: "normaal", emoji: "🧶" },
+  { word: "kat", image: null, type: "normaal", emoji: "🐱" },
+  { word: "vis", image: null, type: "normaal", emoji: "🐟" },
+  { word: "zon", image: null, type: "normaal", emoji: "☀️" },
+  { word: "ster", image: null, type: "normaal", emoji: "⭐" },
+  { word: "deur", image: null, type: "klank", emoji: "🚪" },
+  { word: "raam", image: null, type: "klank", emoji: "🪟" },
+  { word: "bord", image: null, type: "normaal", emoji: "🍽️" },
+  { word: "mes", image: null, type: "normaal", emoji: "🔪" },
+  { word: "vork", image: null, type: "normaal", emoji: "🍴" },
+  { word: "brood", image: null, type: "klank", emoji: "🍞" },
+  { word: "melk", image: null, type: "normaal", emoji: "🥛" },
+  { word: "kaas", image: null, type: "klank", emoji: "🧀" },
+  { word: "appel", image: null, type: "normaal", emoji: "🍎" },
+  { word: "peer", image: null, type: "klank", emoji: "🍐" },
+  { word: "neus", image: null, type: "klank", emoji: "👃" },
+  { word: "oor", image: null, type: "klank", emoji: "👂" },
+  { word: "mond", image: null, type: "normaal", emoji: "👄" },
+  { word: "hand", image: null, type: "normaal", emoji: "✋" },
+  { word: "voet", image: null, type: "klank", emoji: "🦶" },
+  { word: "jas", image: null, type: "normaal", emoji: "🧥" },
+  { word: "sok", image: null, type: "normaal", emoji: "🧦" },
+  { word: "trui", image: null, type: "normaal", emoji: "🧶" },
+  { word: "pet", image: null, type: "normaal", emoji: "🧢" },
+  { word: "fiets", image: null, type: "klank", emoji: "🚲" },
+  { word: "bus", image: null, type: "normaal", emoji: "🚌" },
+  { word: "trein", image: null, type: "klank", emoji: "🚆" },
+  { word: "boot", image: null, type: "klank", emoji: "⛵" },
+  { word: "auto", image: null, type: "normaal", emoji: "🚗" },
+  { word: "vuur", image: null, type: "klank", emoji: "🔥" },
+  { word: "gras", image: null, type: "normaal", emoji: "🌿" },
+  { word: "bloem", image: null, type: "klank", emoji: "🌸" },
+  { word: "roos", image: null, type: "klank", emoji: "🌹" },
+  { word: "wolk", image: null, type: "normaal", emoji: "☁️" },
+  { word: "regen", image: null, type: "normaal", emoji: "🌧️" },
+  { word: "sneeuw", image: null, type: "klank", emoji: "❄️" },
+  { word: "ijs", image: null, type: "klank", emoji: "🧊" },
+  { word: "doos", image: null, type: "klank", emoji: "📦" },
+  { word: "bal", image: null, type: "normaal", emoji: "⚽" },
+  { word: "pop", image: null, type: "normaal", emoji: "🪆" },
+  { word: "beer", image: null, type: "klank", emoji: "🧸" },
+  { word: "krab", image: null, type: "normaal", emoji: "🦀" },
+  { word: "slak", image: null, type: "normaal", emoji: "🐌" },
+  { word: "muis", image: null, type: "normaal", emoji: "🐭" },
+  { word: "koek", image: null, type: "klank", emoji: "🍪" },
+  { word: "soep", image: null, type: "klank", emoji: "🍲" },
+  { word: "ei", image: null, type: "klank", emoji: "🥚" },
+  { word: "wiel", image: null, type: "klank", emoji: "🛞" },
+  { word: "ring", image: null, type: "normaal", emoji: "💍" },
+  { word: "lamp", image: null, type: "normaal", emoji: "💡" },
+  { word: "klok", image: null, type: "normaal", emoji: "🕒" }
 ];
 
 const KLANKEN = ["oe", "ie", "oo", "ee", "eu", "aa"];
@@ -85,6 +185,14 @@ function updateProgress() {
 }
 
 function showWordImage(imgEl, emojiEl, wordObj) {
+  if (!wordObj.image) {
+    imgEl.removeAttribute("src");
+    imgEl.style.display = "none";
+    emojiEl.style.display = "block";
+    emojiEl.textContent = wordObj.emoji || "🧩";
+    return;
+  }
+
   imgEl.src = wordObj.image;
   imgEl.alt = wordObj.word;
   imgEl.onerror = () => {
