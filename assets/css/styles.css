@@ -177,9 +177,31 @@ p {
   line-height: 1;
 }
 
+.image-wrap.emoji-mode .image-emoji {
+  font-size: 8.2rem;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.12));
+}
+
 .question-text {
   font-size: 1.3rem;
   font-weight: 800;
+}
+
+.abort-btn {
+  align-self: flex-end;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(135deg, #64748b, #475569);
+  box-shadow: 0 3px 0 #334155;
+  cursor: pointer;
+}
+
+.abort-btn:active {
+  transform: translateY(2px);
 }
 
 .feedback {
@@ -304,6 +326,10 @@ p {
 
   .image-emoji {
     font-size: 4.8rem;
+  }
+
+  .image-wrap.emoji-mode .image-emoji {
+    font-size: 6.2rem;
   }
 
   .slot {

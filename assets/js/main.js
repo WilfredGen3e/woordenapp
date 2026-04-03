@@ -4,7 +4,7 @@ const GUESS_WORDS = [
   { word: "hond", image: "assets/img/hond.png", emoji: "🐶" },
   { word: "maan", image: "assets/img/maan.png", emoji: "🌙" },
   { word: "boek", image: "assets/img/boek.png", emoji: "📘" },
-  { word: "muts", image: null, emoji: "🧶" },
+  { word: "muts", image: "assets/img/muts.svg", emoji: "🧶" },
   { word: "kat", image: null, emoji: "🐱" },
   { word: "vis", image: null, emoji: "🐟" },
   { word: "zon", image: null, emoji: "☀️" },
@@ -61,7 +61,7 @@ const BUILD_WORDS = [
   { word: "boek", image: "assets/img/boek.png", type: "klank", emoji: "📘" },
   { word: "dier", image: "assets/img/dier.png", type: "klank", emoji: "🐾" },
   { word: "maan", image: "assets/img/maan.png", type: "klank", emoji: "🌙" },
-  { word: "muts", image: null, type: "normaal", emoji: "🧶" },
+  { word: "muts", image: "assets/img/muts.svg", type: "normaal", emoji: "🧶" },
   { word: "kat", image: null, type: "normaal", emoji: "🐱" },
   { word: "vis", image: null, type: "normaal", emoji: "🐟" },
   { word: "zon", image: null, type: "normaal", emoji: "☀️" },
@@ -146,7 +146,11 @@ const state = {
   slotUnits: [],
   slotValues: [],
   selectedLetterBtn: null,
-  dragLetter: null
+  dragLetter: null,
+  previousSessionWords: {
+    guess: [],
+    build: []
+  }
 };
 
 function shuffle(list) {
@@ -160,6 +164,15 @@ function shuffle(list) {
 
 function pickRandom(list, amount) {
   return shuffle(list).slice(0, Math.min(amount, list.length));
+}
+
+function pickSessionWords(gameKey, list, amount) {
+  const previous = new Set(state.previousSessionWords[gameKey] || []);
+  const filtered = list.filter((item) => !previous.has(item.word));
+  const source = filtered.length >= amount ? filtered : list;
+  const picked = pickRandom(source, amount);
+  state.previousSessionWords[gameKey] = picked.map((item) => item.word);
+  return picked;
 }
 
 function setScreen(screenName) {
@@ -185,11 +198,16 @@ function updateProgress() {
 }
 
 function showWordImage(imgEl, emojiEl, wordObj) {
+  const wrapEl = imgEl.closest(".image-wrap");
+
   if (!wordObj.image) {
     imgEl.removeAttribute("src");
     imgEl.style.display = "none";
     emojiEl.style.display = "block";
     emojiEl.textContent = wordObj.emoji || "🧩";
+    if (wrapEl) {
+      wrapEl.classList.add("emoji-mode");
+    }
     return;
   }
 
@@ -199,10 +217,16 @@ function showWordImage(imgEl, emojiEl, wordObj) {
     imgEl.style.display = "none";
     emojiEl.style.display = "block";
     emojiEl.textContent = wordObj.emoji || "🧩";
+    if (wrapEl) {
+      wrapEl.classList.add("emoji-mode");
+    }
   };
   imgEl.onload = () => {
     imgEl.style.display = "block";
     emojiEl.style.display = "none";
+    if (wrapEl) {
+      wrapEl.classList.remove("emoji-mode");
+    }
   };
 }
 
@@ -316,7 +340,7 @@ function startGuessGame() {
   state.game = "guess";
   state.score = 0;
   state.index = 0;
-  state.roundWords = pickRandom(GUESS_WORDS, QUESTIONS_PER_ROUND);
+  state.roundWords = pickSessionWords("guess", GUESS_WORDS, QUESTIONS_PER_ROUND);
 
   updateScore();
   updateProgress();
@@ -409,7 +433,7 @@ function startBuildGame() {
   state.game = "build";
   state.score = 0;
   state.index = 0;
-  state.roundWords = pickRandom(BUILD_WORDS, QUESTIONS_PER_ROUND);
+  state.roundWords = pickSessionWords("build", BUILD_WORDS, QUESTIONS_PER_ROUND);
   state.selectedLetterBtn = null;
   state.dragLetter = null;
 
@@ -597,6 +621,8 @@ function backToMenu() {
 
 document.getElementById("btn-start-guess").addEventListener("click", startGuessGame);
 document.getElementById("btn-start-build").addEventListener("click", startBuildGame);
+document.getElementById("btn-abort-guess").addEventListener("click", backToMenu);
+document.getElementById("btn-abort-build").addEventListener("click", backToMenu);
 document.getElementById("btn-play-again").addEventListener("click", () => {
   if (state.game === "build") {
     startBuildGame();
