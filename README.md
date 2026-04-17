@@ -9,6 +9,4 @@ Deze repo is ingericht als statische webapp met de app in de root.
 - `images/`: optionele afbeeldingen voor woordjes (`image: "images/bestand.png"`)
 - `assets/`: gereserveerd voor losse css/js/img als je later wilt opsplitsen
 
-## Deploy
 
-Deploy de inhoud van deze repo-root naar je static host.
