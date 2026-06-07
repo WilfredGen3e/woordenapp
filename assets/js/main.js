@@ -115,7 +115,8 @@ const BUILD_WORDS = [
 ];
 
 const KLANKEN = ["oe", "ie", "oo", "ee", "eu", "aa"];
-const QUESTIONS_PER_ROUND = 4;
+const GUESS_QUESTIONS_PER_ROUND = 10;
+const BUILD_QUESTIONS_PER_ROUND = 4;
 
 const els = {
   score: document.getElementById("score-display"),
@@ -140,6 +141,7 @@ const els = {
 const state = {
   game: null,
   score: 0,
+  wrong: 0,
   index: 0,
   roundWords: [],
   currentBuildWord: null,
@@ -320,16 +322,19 @@ function finishRound() {
   const total = state.roundWords.length;
   const pct = Math.round((state.score / total) * 100);
 
+  const wrongCount = state.game === "guess" ? state.wrong : total - state.score;
+  const resultLine = `✅ ${state.score} goed  ❌ ${wrongCount} fout`;
+
   if (pct === 100) {
     els.endTitle.textContent = "Wauw, perfect!";
-    els.endMessage.textContent = `Je had ${state.score} van de ${total} goed!`;
+    els.endMessage.textContent = resultLine;
     startConfetti();
   } else if (pct >= 75) {
     els.endTitle.textContent = "Super gedaan!";
-    els.endMessage.textContent = `Je had ${state.score} van de ${total} goed.`;
+    els.endMessage.textContent = resultLine;
   } else {
     els.endTitle.textContent = "Goed geoefend!";
-    els.endMessage.textContent = `Je had ${state.score} van de ${total} goed. Nog een ronde?`;
+    els.endMessage.textContent = resultLine;
   }
 
   speak(els.endTitle.textContent);
@@ -339,8 +344,9 @@ function finishRound() {
 function startGuessGame() {
   state.game = "guess";
   state.score = 0;
+  state.wrong = 0;
   state.index = 0;
-  state.roundWords = pickSessionWords("guess", GUESS_WORDS, QUESTIONS_PER_ROUND);
+  state.roundWords = pickSessionWords("guess", GUESS_WORDS, GUESS_QUESTIONS_PER_ROUND);
 
   updateScore();
   updateProgress();
@@ -373,6 +379,9 @@ function renderGuessQuestion() {
     btn.type = "button";
     btn.textContent = option.word;
     btn.addEventListener("click", () => {
+      const allBtns = Array.from(els.guessAnswers.querySelectorAll(".answer-btn"));
+      allBtns.forEach((b) => { b.disabled = true; });
+
       const correct = option.word === current.word;
       if (correct) {
         state.score += 1;
@@ -385,13 +394,18 @@ function renderGuessQuestion() {
         setTimeout(() => {
           state.index += 1;
           renderGuessQuestion();
-        }, 800);
+        }, 900);
       } else {
-        els.guessFeedback.textContent = "Probeer nog eens 😊";
+        state.wrong += 1;
+        els.guessFeedback.textContent = "Helaas! Het was:";
         els.guessFeedback.className = "feedback bad";
         btn.classList.add("wrong");
+        allBtns.find((b) => b.textContent === current.word)?.classList.add("correct");
         playTone("bad");
-        setTimeout(() => btn.classList.remove("wrong"), 400);
+        setTimeout(() => {
+          state.index += 1;
+          renderGuessQuestion();
+        }, 1400);
       }
     });
     els.guessAnswers.appendChild(btn);
@@ -433,7 +447,7 @@ function startBuildGame() {
   state.game = "build";
   state.score = 0;
   state.index = 0;
-  state.roundWords = pickSessionWords("build", BUILD_WORDS, QUESTIONS_PER_ROUND);
+  state.roundWords = pickSessionWords("build", BUILD_WORDS, BUILD_QUESTIONS_PER_ROUND);
   state.selectedLetterBtn = null;
   state.dragLetter = null;
 
