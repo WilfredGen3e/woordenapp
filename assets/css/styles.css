@@ -158,6 +158,58 @@ p {
   box-shadow: 0 4px 0 #1fa86f;
 }
 
+.menu-btn-quaternary {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  box-shadow: 0 4px 0 #b97d0b;
+}
+
+.bke-status {
+  font-size: 1.5rem;
+  font-weight: 900;
+  text-align: center;
+  min-height: 2.2rem;
+}
+
+.bke-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.bke-cell {
+  aspect-ratio: 1;
+  border-radius: 16px;
+  background: var(--soft);
+  border: 3px solid #bad8ec;
+  font-size: 3.2rem;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.bke-cell:not(:disabled):hover {
+  background: #d0edfb;
+}
+
+.bke-cell.x { color: var(--coral); }
+.bke-cell.o { color: var(--blue); }
+
+.bke-cell.win {
+  background: #d9f8ed;
+  border-color: var(--mint);
+}
+
+.bke-restart-btn {
+  width: 100%;
+  max-width: 300px;
+}
+
 .math-question {
   font-size: 3.5rem;
   font-weight: 900;

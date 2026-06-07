@@ -140,7 +140,11 @@ const els = {
   math: document.getElementById("math-screen"),
   mathQuestion: document.getElementById("math-question"),
   mathAnswers: document.getElementById("math-answers"),
-  mathFeedback: document.getElementById("math-feedback")
+  mathFeedback: document.getElementById("math-feedback"),
+  bke: document.getElementById("bke-screen"),
+  bkeBoard: document.getElementById("bke-board"),
+  bkeStatus: document.getElementById("bke-status"),
+  bkeRestart: document.getElementById("btn-bke-restart")
 };
 
 const state = {
@@ -188,6 +192,7 @@ function setScreen(screenName) {
     guess: els.guess,
     build: els.build,
     math: els.math,
+    bke: els.bke,
     end: els.end
   };
 
@@ -632,6 +637,111 @@ function renderBuildQuestion(keepCurrentWord = false) {
   setTimeout(() => speak(current.word), 350);
 }
 
+const BKE_LINES = [
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6]
+];
+
+const bke = {
+  board: Array(9).fill(null),
+  gameOver: false
+};
+
+function bkeCheckWinner(board) {
+  for (const [a, b, c] of BKE_LINES) {
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+      return { winner: board[a], line: [a, b, c] };
+    }
+  }
+  if (board.every((cell) => cell !== null)) {
+    return { winner: "draw", line: [] };
+  }
+  return null;
+}
+
+function bkeComputerMove(board) {
+  const emptyAt = (line) => line.find((i) => board[i] === null);
+  const countOf = (line, mark) => line.filter((i) => board[i] === mark).length;
+
+  for (const line of BKE_LINES) {
+    if (countOf(line, "O") === 2 && emptyAt(line) !== undefined) return emptyAt(line);
+  }
+  for (const line of BKE_LINES) {
+    if (countOf(line, "X") === 2 && emptyAt(line) !== undefined) return emptyAt(line);
+  }
+  if (board[4] === null) return 4;
+  const corners = [0, 2, 6, 8].filter((i) => board[i] === null);
+  if (corners.length) return corners[Math.floor(Math.random() * corners.length)];
+  const empties = board.map((v, i) => (v === null ? i : -1)).filter((i) => i >= 0);
+  return empties[Math.floor(Math.random() * empties.length)];
+}
+
+function bkeRenderBoard(winLine = []) {
+  els.bkeBoard.innerHTML = "";
+  bke.board.forEach((val, i) => {
+    const cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = [
+      "bke-cell",
+      val === "X" ? "x" : val === "O" ? "o" : "",
+      winLine.includes(i) ? "win" : ""
+    ].join(" ").trim();
+    cell.textContent = val || "";
+    cell.disabled = !!val || bke.gameOver;
+    cell.addEventListener("click", () => bkeHandleClick(i));
+    els.bkeBoard.appendChild(cell);
+  });
+}
+
+function bkeEnd(result) {
+  bke.gameOver = true;
+  if (result.winner === "X") {
+    els.bkeStatus.textContent = "Gewonnen! 🎉";
+    playTone("good");
+    startConfetti();
+  } else if (result.winner === "O") {
+    els.bkeStatus.textContent = "Computer wint! 🤖";
+    playTone("bad");
+  } else {
+    els.bkeStatus.textContent = "Gelijkspel! 🤝";
+  }
+  bkeRenderBoard(result.line);
+  els.bkeRestart.style.display = "block";
+}
+
+function bkeHandleClick(index) {
+  if (bke.gameOver || bke.board[index]) return;
+
+  bke.board[index] = "X";
+  bkeRenderBoard();
+
+  const result = bkeCheckWinner(bke.board);
+  if (result) { bkeEnd(result); return; }
+
+  els.bkeStatus.textContent = "Computer denkt...";
+  setTimeout(() => {
+    const move = bkeComputerMove(bke.board);
+    bke.board[move] = "O";
+    const result2 = bkeCheckWinner(bke.board);
+    if (result2) {
+      bkeEnd(result2);
+    } else {
+      bkeRenderBoard();
+      els.bkeStatus.textContent = "Jouw beurt! (✕)";
+    }
+  }, 420);
+}
+
+function startBkeGame() {
+  bke.board = Array(9).fill(null);
+  bke.gameOver = false;
+  els.bkeStatus.textContent = "Jouw beurt! (✕)";
+  els.bkeRestart.style.display = "none";
+  setScreen("bke");
+  bkeRenderBoard();
+}
+
 function generateMathQuestion() {
   const isAdd = Math.random() < 0.5;
   if (isAdd) {
@@ -760,6 +870,9 @@ document.getElementById("btn-abort-guess").addEventListener("click", backToMenu)
 document.getElementById("btn-abort-build").addEventListener("click", backToMenu);
 document.getElementById("btn-start-math").addEventListener("click", startMathGame);
 document.getElementById("btn-abort-math").addEventListener("click", backToMenu);
+document.getElementById("btn-start-bke").addEventListener("click", startBkeGame);
+document.getElementById("btn-abort-bke").addEventListener("click", backToMenu);
+document.getElementById("btn-bke-restart").addEventListener("click", startBkeGame);
 document.getElementById("btn-play-again").addEventListener("click", () => {
   if (state.game === "build") { startBuildGame(); return; }
   if (state.game === "math") { startMathGame(); return; }
