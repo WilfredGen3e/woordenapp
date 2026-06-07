@@ -29,6 +29,7 @@
         <div class="menu-actions">
           <button id="btn-start-guess" class="menu-btn">Raad het woord</button>
           <button id="btn-start-build" class="menu-btn menu-btn-secondary">Bouw het woord</button>
+          <button id="btn-start-math" class="menu-btn menu-btn-tertiary">Rekenen</button>
         </div>
       </section>
 
@@ -53,6 +54,13 @@
         <div id="build-slots" class="slots"></div>
         <div id="build-letters" class="letters"></div>
         <div id="build-feedback" class="feedback"></div>
+      </section>
+
+      <section id="math-screen" class="screen" aria-live="polite">
+        <button id="btn-abort-math" class="abort-btn" type="button">Terug naar menu</button>
+        <p class="math-question" id="math-question">3 + 4 = ?</p>
+        <div id="math-feedback" class="feedback"></div>
+        <div id="math-answers" class="answers"></div>
       </section>
 
       <section id="end-screen" class="screen">

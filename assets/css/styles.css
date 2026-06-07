@@ -153,6 +153,19 @@ p {
   box-shadow: 0 4px 0 #cf5a97;
 }
 
+.menu-btn-tertiary {
+  background: linear-gradient(135deg, #86efac, #34d399);
+  box-shadow: 0 4px 0 #1fa86f;
+}
+
+.math-question {
+  font-size: 3.5rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-align: center;
+  margin: 12px 0;
+}
+
 .image-wrap {
   width: 200px;
   height: 200px;

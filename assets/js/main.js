@@ -116,7 +116,8 @@ const BUILD_WORDS = [
 
 const KLANKEN = ["oe", "ie", "oo", "ee", "eu", "aa"];
 const GUESS_QUESTIONS_PER_ROUND = 10;
-const BUILD_QUESTIONS_PER_ROUND = 4;
+const BUILD_QUESTIONS_PER_ROUND = 10;
+const MATH_QUESTIONS_PER_ROUND = 10;
 
 const els = {
   score: document.getElementById("score-display"),
@@ -135,7 +136,11 @@ const els = {
   buildEmoji: document.getElementById("build-emoji"),
   buildSlots: document.getElementById("build-slots"),
   buildLetters: document.getElementById("build-letters"),
-  buildFeedback: document.getElementById("build-feedback")
+  buildFeedback: document.getElementById("build-feedback"),
+  math: document.getElementById("math-screen"),
+  mathQuestion: document.getElementById("math-question"),
+  mathAnswers: document.getElementById("math-answers"),
+  mathFeedback: document.getElementById("math-feedback")
 };
 
 const state = {
@@ -182,6 +187,7 @@ function setScreen(screenName) {
     menu: els.menu,
     guess: els.guess,
     build: els.build,
+    math: els.math,
     end: els.end
   };
 
@@ -322,7 +328,7 @@ function finishRound() {
   const total = state.roundWords.length;
   const pct = Math.round((state.score / total) * 100);
 
-  const wrongCount = state.game === "guess" ? state.wrong : total - state.score;
+  const wrongCount = state.wrong;
   const resultLine = `✅ ${state.score} goed  ❌ ${wrongCount} fout`;
 
   if (pct === 100) {
@@ -446,6 +452,7 @@ function splitInUnits(wordObj) {
 function startBuildGame() {
   state.game = "build";
   state.score = 0;
+  state.wrong = 0;
   state.index = 0;
   state.roundWords = pickSessionWords("build", BUILD_WORDS, BUILD_QUESTIONS_PER_ROUND);
   state.selectedLetterBtn = null;
@@ -577,13 +584,15 @@ function checkBuildAnswer() {
       renderBuildQuestion();
     }, 900);
   } else {
-    els.buildFeedback.textContent = "Probeer nog eens 😊";
+    state.wrong += 1;
+    els.buildFeedback.textContent = `Helaas! Het was: ${correctWord}`;
     els.buildFeedback.className = "feedback bad";
     playTone("bad");
-
+    Array.from(els.buildLetters.querySelectorAll(".letter-tile")).forEach((b) => { b.disabled = true; });
     setTimeout(() => {
-      renderBuildQuestion(true);
-    }, 550);
+      state.index += 1;
+      renderBuildQuestion();
+    }, 1400);
   }
 }
 
@@ -623,6 +632,118 @@ function renderBuildQuestion(keepCurrentWord = false) {
   setTimeout(() => speak(current.word), 350);
 }
 
+function generateMathQuestion() {
+  const isAdd = Math.random() < 0.5;
+  if (isAdd) {
+    const a = Math.floor(Math.random() * 9) + 1;
+    const b = Math.floor(Math.random() * (10 - a)) + 1;
+    return { a, op: "+", b, answer: a + b };
+  } else {
+    const a = Math.floor(Math.random() * 9) + 2;
+    const b = Math.floor(Math.random() * (a - 1)) + 1;
+    return { a, op: "-", b, answer: a - b };
+  }
+}
+
+function generateMathQuestions(amount) {
+  const questions = [];
+  const seen = new Set();
+  let attempts = 0;
+  while (questions.length < amount && attempts < 300) {
+    attempts += 1;
+    const q = generateMathQuestion();
+    const key = `${q.a}${q.op}${q.b}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      questions.push(q);
+    }
+  }
+  return questions;
+}
+
+function generateMathChoices(correct) {
+  const choices = new Set([correct]);
+  const candidates = [];
+  for (let d = 1; d <= 5; d++) {
+    if (correct + d <= 10) candidates.push(correct + d);
+    if (correct - d >= 0) candidates.push(correct - d);
+  }
+  for (const c of shuffle(candidates)) {
+    if (choices.size >= 4) break;
+    choices.add(c);
+  }
+  return shuffle([...choices]);
+}
+
+function startMathGame() {
+  state.game = "math";
+  state.score = 0;
+  state.wrong = 0;
+  state.index = 0;
+  state.roundWords = generateMathQuestions(MATH_QUESTIONS_PER_ROUND);
+
+  updateScore();
+  updateProgress();
+  els.mathFeedback.textContent = "";
+  els.mathFeedback.className = "feedback";
+  setScreen("math");
+  renderMathQuestion();
+}
+
+function renderMathQuestion() {
+  if (state.index >= state.roundWords.length) {
+    finishRound();
+    return;
+  }
+
+  const q = state.roundWords[state.index];
+  updateProgress();
+  els.mathQuestion.textContent = `${q.a} ${q.op} ${q.b} = ?`;
+  els.mathFeedback.textContent = "";
+  els.mathFeedback.className = "feedback";
+  els.mathAnswers.innerHTML = "";
+
+  const choices = generateMathChoices(q.answer);
+  choices.forEach((choice) => {
+    const btn = document.createElement("button");
+    btn.className = "answer-btn";
+    btn.type = "button";
+    btn.textContent = String(choice);
+    btn.addEventListener("click", () => {
+      const allBtns = Array.from(els.mathAnswers.querySelectorAll(".answer-btn"));
+      allBtns.forEach((b) => { b.disabled = true; });
+
+      if (choice === q.answer) {
+        state.score += 1;
+        updateScore();
+        els.mathFeedback.textContent = "Goed gedaan! 🎉";
+        els.mathFeedback.className = "feedback good";
+        btn.classList.add("correct");
+        playTone("good");
+        startConfetti();
+        setTimeout(() => {
+          state.index += 1;
+          renderMathQuestion();
+        }, 900);
+      } else {
+        state.wrong += 1;
+        els.mathFeedback.textContent = `Helaas! Het was: ${q.answer}`;
+        els.mathFeedback.className = "feedback bad";
+        btn.classList.add("wrong");
+        allBtns.find((b) => Number(b.textContent) === q.answer)?.classList.add("correct");
+        playTone("bad");
+        setTimeout(() => {
+          state.index += 1;
+          renderMathQuestion();
+        }, 1400);
+      }
+    });
+    els.mathAnswers.appendChild(btn);
+  });
+
+  speak(els.mathQuestion.textContent);
+}
+
 function backToMenu() {
   state.game = null;
   state.roundWords = [];
@@ -637,11 +758,11 @@ document.getElementById("btn-start-guess").addEventListener("click", startGuessG
 document.getElementById("btn-start-build").addEventListener("click", startBuildGame);
 document.getElementById("btn-abort-guess").addEventListener("click", backToMenu);
 document.getElementById("btn-abort-build").addEventListener("click", backToMenu);
+document.getElementById("btn-start-math").addEventListener("click", startMathGame);
+document.getElementById("btn-abort-math").addEventListener("click", backToMenu);
 document.getElementById("btn-play-again").addEventListener("click", () => {
-  if (state.game === "build") {
-    startBuildGame();
-    return;
-  }
+  if (state.game === "build") { startBuildGame(); return; }
+  if (state.game === "math") { startMathGame(); return; }
   startGuessGame();
 });
 document.getElementById("btn-back-menu").addEventListener("click", backToMenu);
