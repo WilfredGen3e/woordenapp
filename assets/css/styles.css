@@ -163,6 +163,11 @@ p {
   box-shadow: 0 4px 0 #b97d0b;
 }
 
+.menu-btn-quinary {
+  background: linear-gradient(135deg, #c084fc, #a855f7);
+  box-shadow: 0 4px 0 #7e22ce;
+}
+
 .bke-mode-select {
   display: flex;
   flex-direction: column;

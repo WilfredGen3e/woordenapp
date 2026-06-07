@@ -118,6 +118,7 @@ const KLANKEN = ["oe", "ie", "oo", "ee", "eu", "aa"];
 const GUESS_QUESTIONS_PER_ROUND = 10;
 const BUILD_QUESTIONS_PER_ROUND = 10;
 const MATH_QUESTIONS_PER_ROUND = 10;
+const TAFELS_QUESTIONS_PER_ROUND = 10;
 
 const els = {
   score: document.getElementById("score-display"),
@@ -141,6 +142,10 @@ const els = {
   mathQuestion: document.getElementById("math-question"),
   mathAnswers: document.getElementById("math-answers"),
   mathFeedback: document.getElementById("math-feedback"),
+  tafels: document.getElementById("tafels-screen"),
+  tafelsQuestion: document.getElementById("tafels-question"),
+  tafelsAnswers: document.getElementById("tafels-answers"),
+  tafelsFeedback: document.getElementById("tafels-feedback"),
   bke: document.getElementById("bke-screen"),
   bkeBoard: document.getElementById("bke-board"),
   bkeStatus: document.getElementById("bke-status"),
@@ -192,6 +197,7 @@ function setScreen(screenName) {
     guess: els.guess,
     build: els.build,
     math: els.math,
+    tafels: els.tafels,
     bke: els.bke,
     end: els.end
   };
@@ -637,6 +643,93 @@ function renderBuildQuestion(keepCurrentWord = false) {
   setTimeout(() => speak(current.word), 350);
 }
 
+function generateTafelQuestions(amount) {
+  const all = [];
+  for (const a of [1, 2, 3]) {
+    for (let b = 1; b <= 10; b++) {
+      all.push({ a, b, answer: a * b });
+    }
+  }
+  return pickRandom(all, amount);
+}
+
+function generateTafelChoices(correct) {
+  const choices = new Set([correct]);
+  const candidates = [];
+  for (let d = 1; d <= 8; d++) {
+    if (correct + d <= 30) candidates.push(correct + d);
+    if (correct - d >= 1) candidates.push(correct - d);
+  }
+  for (const c of shuffle(candidates)) {
+    if (choices.size >= 4) break;
+    choices.add(c);
+  }
+  return shuffle([...choices]);
+}
+
+function startTafelsGame() {
+  state.game = "tafels";
+  state.score = 0;
+  state.wrong = 0;
+  state.index = 0;
+  state.roundWords = generateTafelQuestions(TAFELS_QUESTIONS_PER_ROUND);
+
+  updateScore();
+  updateProgress();
+  els.tafelsFeedback.textContent = "";
+  els.tafelsFeedback.className = "feedback";
+  setScreen("tafels");
+  renderTafelsQuestion();
+}
+
+function renderTafelsQuestion() {
+  if (state.index >= state.roundWords.length) {
+    finishRound();
+    return;
+  }
+
+  const q = state.roundWords[state.index];
+  updateProgress();
+  els.tafelsQuestion.textContent = `${q.a} × ${q.b} = ?`;
+  els.tafelsFeedback.textContent = "";
+  els.tafelsFeedback.className = "feedback";
+  els.tafelsAnswers.innerHTML = "";
+
+  const choices = generateTafelChoices(q.answer);
+  choices.forEach((choice) => {
+    const btn = document.createElement("button");
+    btn.className = "answer-btn";
+    btn.type = "button";
+    btn.textContent = String(choice);
+    btn.addEventListener("click", () => {
+      const allBtns = Array.from(els.tafelsAnswers.querySelectorAll(".answer-btn"));
+      allBtns.forEach((b) => { b.disabled = true; });
+
+      if (choice === q.answer) {
+        state.score += 1;
+        updateScore();
+        els.tafelsFeedback.textContent = "Goed gedaan! 🎉";
+        els.tafelsFeedback.className = "feedback good";
+        btn.classList.add("correct");
+        playTone("good");
+        startConfetti();
+        setTimeout(() => { state.index += 1; renderTafelsQuestion(); }, 900);
+      } else {
+        state.wrong += 1;
+        els.tafelsFeedback.textContent = `Helaas! Het was: ${q.answer}`;
+        els.tafelsFeedback.className = "feedback bad";
+        btn.classList.add("wrong");
+        allBtns.find((b) => Number(b.textContent) === q.answer)?.classList.add("correct");
+        playTone("bad");
+        setTimeout(() => { state.index += 1; renderTafelsQuestion(); }, 1400);
+      }
+    });
+    els.tafelsAnswers.appendChild(btn);
+  });
+
+  speak(els.tafelsQuestion.textContent);
+}
+
 const BKE_LINES = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
@@ -891,6 +984,8 @@ document.getElementById("btn-abort-guess").addEventListener("click", backToMenu)
 document.getElementById("btn-abort-build").addEventListener("click", backToMenu);
 document.getElementById("btn-start-math").addEventListener("click", startMathGame);
 document.getElementById("btn-abort-math").addEventListener("click", backToMenu);
+document.getElementById("btn-start-tafels").addEventListener("click", startTafelsGame);
+document.getElementById("btn-abort-tafels").addEventListener("click", backToMenu);
 document.getElementById("btn-start-bke").addEventListener("click", startBkeGame);
 document.getElementById("btn-abort-bke").addEventListener("click", backToMenu);
 document.getElementById("btn-bke-vs-computer").addEventListener("click", () => startBkeWithMode("computer"));
@@ -899,6 +994,7 @@ document.getElementById("btn-bke-restart").addEventListener("click", () => start
 document.getElementById("btn-play-again").addEventListener("click", () => {
   if (state.game === "build") { startBuildGame(); return; }
   if (state.game === "math") { startMathGame(); return; }
+  if (state.game === "tafels") { startTafelsGame(); return; }
   startGuessGame();
 });
 document.getElementById("btn-back-menu").addEventListener("click", backToMenu);
