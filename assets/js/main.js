@@ -645,7 +645,9 @@ const BKE_LINES = [
 
 const bke = {
   board: Array(9).fill(null),
-  gameOver: false
+  gameOver: false,
+  mode: "computer",
+  currentPlayer: "X"
 };
 
 function bkeCheckWinner(board) {
@@ -696,15 +698,16 @@ function bkeRenderBoard(winLine = []) {
 
 function bkeEnd(result) {
   bke.gameOver = true;
-  if (result.winner === "X") {
-    els.bkeStatus.textContent = "Gewonnen! 🎉";
+  if (result.winner === "draw") {
+    els.bkeStatus.textContent = "Gelijkspel! 🤝";
+  } else if (bke.mode === "computer") {
+    els.bkeStatus.textContent = result.winner === "X" ? "Gewonnen! 🎉" : "Computer wint! 🤖";
+    if (result.winner === "X") { playTone("good"); startConfetti(); } else { playTone("bad"); }
+  } else {
+    const label = result.winner === "X" ? "✕" : "○";
+    els.bkeStatus.textContent = `Speler ${label} wint! 🎉`;
     playTone("good");
     startConfetti();
-  } else if (result.winner === "O") {
-    els.bkeStatus.textContent = "Computer wint! 🤖";
-    playTone("bad");
-  } else {
-    els.bkeStatus.textContent = "Gelijkspel! 🤝";
   }
   bkeRenderBoard(result.line);
   els.bkeRestart.style.display = "block";
@@ -713,33 +716,51 @@ function bkeEnd(result) {
 function bkeHandleClick(index) {
   if (bke.gameOver || bke.board[index]) return;
 
-  bke.board[index] = "X";
+  bke.board[index] = bke.currentPlayer;
   bkeRenderBoard();
 
   const result = bkeCheckWinner(bke.board);
   if (result) { bkeEnd(result); return; }
 
-  els.bkeStatus.textContent = "Computer denkt...";
-  setTimeout(() => {
-    const move = bkeComputerMove(bke.board);
-    bke.board[move] = "O";
-    const result2 = bkeCheckWinner(bke.board);
-    if (result2) {
-      bkeEnd(result2);
-    } else {
-      bkeRenderBoard();
-      els.bkeStatus.textContent = "Jouw beurt! (✕)";
-    }
-  }, 420);
+  if (bke.mode === "computer") {
+    els.bkeStatus.textContent = "Computer denkt...";
+    setTimeout(() => {
+      const move = bkeComputerMove(bke.board);
+      bke.board[move] = "O";
+      const result2 = bkeCheckWinner(bke.board);
+      if (result2) {
+        bkeEnd(result2);
+      } else {
+        bkeRenderBoard();
+        els.bkeStatus.textContent = "Jouw beurt! (✕)";
+      }
+    }, 420);
+  } else {
+    bke.currentPlayer = bke.currentPlayer === "X" ? "O" : "X";
+    const label = bke.currentPlayer === "X" ? "✕" : "○";
+    els.bkeStatus.textContent = `Speler ${label} is aan de beurt`;
+    bkeRenderBoard();
+  }
+}
+
+function startBkeWithMode(mode) {
+  bke.board = Array(9).fill(null);
+  bke.gameOver = false;
+  bke.mode = mode;
+  bke.currentPlayer = "X";
+
+  document.getElementById("bke-mode-select").style.display = "none";
+  document.getElementById("bke-game").style.display = "flex";
+
+  els.bkeStatus.textContent = mode === "computer" ? "Jouw beurt! (✕)" : "Speler ✕ is aan de beurt";
+  els.bkeRestart.style.display = "none";
+  bkeRenderBoard();
 }
 
 function startBkeGame() {
-  bke.board = Array(9).fill(null);
-  bke.gameOver = false;
-  els.bkeStatus.textContent = "Jouw beurt! (✕)";
-  els.bkeRestart.style.display = "none";
+  document.getElementById("bke-mode-select").style.display = "flex";
+  document.getElementById("bke-game").style.display = "none";
   setScreen("bke");
-  bkeRenderBoard();
 }
 
 function generateMathQuestion() {
@@ -872,7 +893,9 @@ document.getElementById("btn-start-math").addEventListener("click", startMathGam
 document.getElementById("btn-abort-math").addEventListener("click", backToMenu);
 document.getElementById("btn-start-bke").addEventListener("click", startBkeGame);
 document.getElementById("btn-abort-bke").addEventListener("click", backToMenu);
-document.getElementById("btn-bke-restart").addEventListener("click", startBkeGame);
+document.getElementById("btn-bke-vs-computer").addEventListener("click", () => startBkeWithMode("computer"));
+document.getElementById("btn-bke-vs-player").addEventListener("click", () => startBkeWithMode("player"));
+document.getElementById("btn-bke-restart").addEventListener("click", () => startBkeWithMode(bke.mode));
 document.getElementById("btn-play-again").addEventListener("click", () => {
   if (state.game === "build") { startBuildGame(); return; }
   if (state.game === "math") { startMathGame(); return; }

@@ -163,6 +163,26 @@ p {
   box-shadow: 0 4px 0 #b97d0b;
 }
 
+.bke-mode-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.bke-mode-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.bke-game {
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
 .bke-status {
   font-size: 1.5rem;
   font-weight: 900;

@@ -58,9 +58,20 @@
 
       <section id="bke-screen" class="screen" aria-live="polite">
         <button id="btn-abort-bke" class="abort-btn" type="button">Terug naar menu</button>
-        <p id="bke-status" class="bke-status">Jouw beurt!</p>
-        <div id="bke-board" class="bke-board"></div>
-        <button id="btn-bke-restart" class="menu-btn bke-restart-btn" type="button" style="display:none">Nog een keer</button>
+
+        <div id="bke-mode-select" class="bke-mode-select">
+          <p class="bke-mode-title">Wie speel jij tegen?</p>
+          <div class="menu-actions" style="max-width:300px">
+            <button id="btn-bke-vs-computer" class="menu-btn" type="button">🤖 Tegen de computer</button>
+            <button id="btn-bke-vs-player" class="menu-btn menu-btn-secondary" type="button">🧑‍🤝‍🧑 Tegen een vriend</button>
+          </div>
+        </div>
+
+        <div id="bke-game" class="bke-game" style="display:none">
+          <p id="bke-status" class="bke-status">Jouw beurt!</p>
+          <div id="bke-board" class="bke-board"></div>
+          <button id="btn-bke-restart" class="menu-btn bke-restart-btn" type="button" style="display:none">Nog een keer</button>
+        </div>
       </section>
 
       <section id="math-screen" class="screen" aria-live="polite">
