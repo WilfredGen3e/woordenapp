@@ -142,6 +142,11 @@ const els = {
   mathQuestion: document.getElementById("math-question"),
   mathAnswers: document.getElementById("math-answers"),
   mathFeedback: document.getElementById("math-feedback"),
+  memory: document.getElementById("memory-screen"),
+  memoryBanner: document.getElementById("memory-banner"),
+  memoryStatus: document.getElementById("memory-status"),
+  memoryScores: document.getElementById("memory-scores"),
+  memoryBoard: document.getElementById("memory-board"),
   tafels: document.getElementById("tafels-screen"),
   tafelsQuestion: document.getElementById("tafels-question"),
   tafelsAnswers: document.getElementById("tafels-answers"),
@@ -197,6 +202,7 @@ function setScreen(screenName) {
     guess: els.guess,
     build: els.build,
     math: els.math,
+    memory: els.memory,
     tafels: els.tafels,
     bke: els.bke,
     end: els.end
@@ -643,6 +649,113 @@ function renderBuildQuestion(keepCurrentWord = false) {
   setTimeout(() => speak(current.word), 350);
 }
 
+const mem = {
+  cards: [],
+  flipped: [],
+  locked: false,
+  scores: [0, 0],
+  currentPlayer: 0
+};
+
+function memUpdateBanner() {
+  const p = mem.currentPlayer;
+  els.memoryBanner.className = "memory-banner " + (p === 0 ? "p1" : "p2");
+  els.memoryStatus.textContent = `Speler ${p + 1} is aan de beurt`;
+  els.memoryScores.innerHTML = `Speler 1: ${mem.scores[0]} paar &nbsp;|&nbsp; Speler 2: ${mem.scores[1]} paar`;
+}
+
+function memUpdateProgress() {
+  const pairs = mem.cards.filter((c) => c.matched).length / 2;
+  els.progress.style.width = `${Math.round((pairs / 10) * 100)}%`;
+}
+
+function memRenderBoard() {
+  els.memoryBoard.innerHTML = "";
+  mem.cards.forEach((card, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "memory-card" + (card.matched ? " matched" : card.flipped ? " flipped" : "");
+    btn.textContent = card.flipped || card.matched ? card.emoji : "?";
+    btn.disabled = card.matched || card.flipped || mem.locked;
+    btn.addEventListener("click", () => memHandleClick(i));
+    els.memoryBoard.appendChild(btn);
+  });
+}
+
+function memHandleClick(index) {
+  if (mem.locked || mem.cards[index].flipped || mem.cards[index].matched) return;
+
+  mem.cards[index].flipped = true;
+  mem.flipped.push(index);
+  memRenderBoard();
+
+  if (mem.flipped.length < 2) return;
+
+  mem.locked = true;
+  const [a, b] = mem.flipped;
+
+  if (mem.cards[a].emoji === mem.cards[b].emoji) {
+    mem.cards[a].matched = true;
+    mem.cards[b].matched = true;
+    mem.scores[mem.currentPlayer] += 1;
+    mem.flipped = [];
+    mem.locked = false;
+    memRenderBoard();
+    memUpdateBanner();
+    memUpdateProgress();
+    playTone("good");
+
+    if (mem.cards.every((c) => c.matched)) {
+      setTimeout(memEndGame, 600);
+    }
+  } else {
+    playTone("bad");
+    setTimeout(() => {
+      mem.cards[a].flipped = false;
+      mem.cards[b].flipped = false;
+      mem.flipped = [];
+      mem.locked = false;
+      mem.currentPlayer = mem.currentPlayer === 0 ? 1 : 0;
+      memRenderBoard();
+      memUpdateBanner();
+    }, 1000);
+  }
+}
+
+function memEndGame() {
+  const [s1, s2] = mem.scores;
+  if (s1 > s2) {
+    els.endTitle.textContent = "Speler 1 wint! 🎉";
+  } else if (s2 > s1) {
+    els.endTitle.textContent = "Speler 2 wint! 🎉";
+  } else {
+    els.endTitle.textContent = "Gelijkspel! 🤝";
+  }
+  els.endMessage.textContent = `🔵 Speler 1: ${s1} paar   🩷 Speler 2: ${s2} paar`;
+  els.progress.style.width = "100%";
+  startConfetti();
+  playTone("good");
+  setScreen("end");
+}
+
+function startMemoryGame() {
+  const uniqueEmojis = [...new Set(GUESS_WORDS.map((w) => w.emoji))];
+  const picked = pickRandom(uniqueEmojis, 10);
+  const pairs = shuffle([...picked, ...picked]);
+
+  mem.cards = pairs.map((emoji, i) => ({ id: i, emoji, matched: false, flipped: false }));
+  mem.flipped = [];
+  mem.locked = false;
+  mem.scores = [0, 0];
+  mem.currentPlayer = 0;
+
+  state.game = "memory";
+  els.progress.style.width = "0%";
+  setScreen("memory");
+  memUpdateBanner();
+  memRenderBoard();
+}
+
 function generateTafelQuestions(amount) {
   const all = [];
   for (const a of [1, 2, 3]) {
@@ -984,6 +1097,8 @@ document.getElementById("btn-abort-guess").addEventListener("click", backToMenu)
 document.getElementById("btn-abort-build").addEventListener("click", backToMenu);
 document.getElementById("btn-start-math").addEventListener("click", startMathGame);
 document.getElementById("btn-abort-math").addEventListener("click", backToMenu);
+document.getElementById("btn-start-memory").addEventListener("click", startMemoryGame);
+document.getElementById("btn-abort-memory").addEventListener("click", backToMenu);
 document.getElementById("btn-start-tafels").addEventListener("click", startTafelsGame);
 document.getElementById("btn-abort-tafels").addEventListener("click", backToMenu);
 document.getElementById("btn-start-bke").addEventListener("click", startBkeGame);
@@ -995,6 +1110,7 @@ document.getElementById("btn-play-again").addEventListener("click", () => {
   if (state.game === "build") { startBuildGame(); return; }
   if (state.game === "math") { startMathGame(); return; }
   if (state.game === "tafels") { startTafelsGame(); return; }
+  if (state.game === "memory") { startMemoryGame(); return; }
   startGuessGame();
 });
 document.getElementById("btn-back-menu").addEventListener("click", backToMenu);

@@ -29,6 +29,7 @@
           <button id="btn-start-guess" class="menu-btn">Raad het woord</button>
           <button id="btn-start-build" class="menu-btn menu-btn-secondary">Bouw het woord</button>
           <button id="btn-start-math" class="menu-btn menu-btn-tertiary">Rekenen</button>
+          <button id="btn-start-memory" class="menu-btn menu-btn-memory">Memory</button>
           <button id="btn-start-tafels" class="menu-btn menu-btn-quinary">Tafels</button>
           <button id="btn-start-bke" class="menu-btn menu-btn-quaternary">Boter kaas en eieren</button>
         </div>
@@ -55,6 +56,15 @@
         <div id="build-slots" class="slots"></div>
         <div id="build-letters" class="letters"></div>
         <div id="build-feedback" class="feedback"></div>
+      </section>
+
+      <section id="memory-screen" class="screen" aria-live="polite">
+        <button id="btn-abort-memory" class="abort-btn" type="button">Terug naar menu</button>
+        <div id="memory-banner" class="memory-banner p1">
+          <p id="memory-status" class="memory-status">Speler 1 is aan de beurt</p>
+          <p id="memory-scores" class="memory-scores">Speler 1: 0 paar &nbsp;|&nbsp; Speler 2: 0 paar</p>
+        </div>
+        <div id="memory-board" class="memory-board"></div>
       </section>
 
       <section id="tafels-screen" class="screen" aria-live="polite">
